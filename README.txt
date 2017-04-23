@@ -1,0 +1,1 @@
+This repository is for the R-Ladies advance R study group. Please contribute solutions so that we can all learn different ways of doing things, or leave questions so that we can go over them at the next study group. 
