@@ -1,0 +1,85 @@
+---
+title: "Functions in R from Advanced R"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+The three components of a function
+
+```{r}
+f <- function(x) x^2
+f
+formals(f) ## the arguments to the function
+body(f)    ## the "stuff" in middle, usually between {}
+environment(f) ## where  your function going to look for value
+               ## of objects
+
+```
+These assignments can be used to modify these attributes of a function.  Functions have other attributes as well (like many other objects, remember ! functions are objects)
+
+One attribute is srcref which is short for source reference *(look up later)*
+
+
+
+**Privative Functions**
+Primative functions do not have a body attribute because they call C+ routines directly. Asking for body of a primative function will return NULL as will requests for formals and environment.
+```{r}
+x<-1:10
+sum(x)
+body(sum)
+```
+Primative functions are only found in the BASE R package.  They do not behave entirely the same as the other functions in R. *(research primative functions argument matching)* but are more efficient.
+
+**Exercises**
+The function str() or is.function() will tell you if something is a funtion
+
+```{r}
+str(f)
+is.function(f)
+str(sum)
+is.function(sum)
+```
+
+```{r}
+objs <- mget(ls("package:base"), inherits = TRUE)
+funs <- Filter(is.function, objs)
+funs[1:5]
+
+is.function(funs[[2]])
+length(formals(funs[[2]]))
+args<-sapply(funs,function(x) length(formals(x)))## x a function here?
+args[1:10]
+(args2<-max(args))
+
+args[args==22]### scan
+funs[args==0]
+
+funs[1]
+names(funs[1])
+str(funs[1])
+funs[["-"]]
+
+
+```
+
+
+Which base function has the most arguments? *scan has 22 arguments*
+
+How many base functions have no arguments? What’s special about those functions? *Many of them are Primative functions but not all are.*
+
+How could you adapt the code to find all primitive function
+*not sure*
+
+---
+
+
+
+
+
+
+
+
+
+
+
