@@ -1,0 +1,149 @@
+---
+title: "Chapter 2 advanced R"
+author: "Brigid McDermott"
+date: "May 9, 2017"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+## Initial attempt at opening quiz.
+### Trying to answer these before I read the chapter
+
+
+1. What is the result of subsetting a vector with positive integers, negative integers, a logical vector, or a character vector?
+-- You get a vector with the same type of elements from which you took the subset.{Whoops this is not what this question meant. See the first part of chapter on subsetting.}
+
+2. What’s the difference between [, [[, and $ when applied to a list?
+-- I have never been really clear on this, but something like [
+  gives you an element of a list as a list, [[ gives you the  element as the underlying structure (vector, db etc) and $ gives you named elements of the list.
+
+3. When should you use drop = FALSE?
+-- when you are subsetting from a factor, say for example taking all the men from from men/women factor but you want to keep all the levels in the new subsetted factor.
+
+4. If x is a matrix, what does x[] <- 0 do? How is it different to x <- 0?
+-- I don't know;let me try. Ok the first produces the structure matrix with 0 for all elements,     while the second produces an atomic vector with the type double, value 0
+   
+5. How can you use a named vector to relabel categorical variables?
+--this one I knew
+```{r question_5}
+
+animals<-c( c="cat",d="dog", m="mouse", r="rabbit")
+x<-rep(c("c","d","m","r"),c(4,3,2,1))
+x
+animals[x]
+animals<-c( c="cougar",d="dolphin", m="moose", r="raptor")
+animals[x]
+unname(animals[x]) #### nice, I didn't know unname
+```
+## note to myself about "outer" function
+I looked at http://www.endmemo.com/program/R/outer.php
+
+```{r outer}
+x <- c(1,2.3,2,3,4,8,12,43)
+y<- c(2,4)
+outer(x,y)
+### same thing as
+x%o%y
+```
+So if you have x with a elements and y with b elements then
+outer(x,y) will result in a matrix with a rows and b columns where element [1,1] in matrix is x[1]*y[1] and element [3,4] is x[3]*y[4] etc.  You can define the function another function instead of the default *, i.e + .
+```{r outer_2}
+outer(x,y,FUN="+")
+## or from the Advanced R book
+vals <- outer(1:5, 1:5, FUN = "paste", sep = ",")
+vals
+```
+
+##Exercises
+1.Fix each of the following common data frame subsetting errors:
+mtcars[mtcars$cyl== 4, ] ## double equal sign for equality logical
+mtcars[-1:-4, ] ## cannot mix negative and positive indexes, this will remove 1 to 4 first rows
+mtcars[mtcars$cyl <= 5, ]##logical identifies rows so  need a comma to make this clearly row identifier
+mtcars[mtcars$cyl == 4 | mtcars$cyl==6, ] ## syntax requires it this way
+
+2. Why does x <- 1:5; x[NA] yield five missing values? (Hint: why is it different from x[NA_real_]?)
+I believe it is because in the case of x[NA] it is asking if each element is a missing logical and in each case the answer is NA because the logical cannot be compared with the double. In the second case it asks where in x is an element matched as NA_real and the answer is nowhere, ie. NA.  
+
+3.What does upper.tri() return? How does subsetting a matrix with it work? Do we need any additional subsetting rules to describe its behaviour?
+The function upper.tri() returns a logical matrix that gives true values on the positions above the diagnoal of the matrix.  I am not sure how this would work on a non-square matrix. I checked as below and see that the diagonal starts at the upper left value and ends before the lower right value. The default of this command is not to include the values in the diagonal but the option is to change it to "diag=TRUE"
+
+```{r upper tri}
+x<-matrix(1:24,nrow=4)
+upper.tri(x)
+```
+4.Why does mtcars[1:20] return an error? How does it differ from the similar mtcars[1:20, ]?
+The first notation attempts to use column indexing on a data.frame  but there are only 20 columan is mtcar so the command cannot be executed. Note that mtcar[1:5] will work. The second notation asks for the first 20 rows of the data.frame mtcars as indicated my the comma in the subsetting brackets[].
+
+5.Implement your own function that extracts the diagonal entries from a matrix (it should behave like diag(x) where x is a matrix).
+```{r}
+x<-matrix(letters[1:16],nrow=4)
+x
+y<-rep(NA,nrow(x))
+for(i in 1:nrow(x)){y[i]<-x[i,i]}
+y
+```
+6. What does df[is.na(df)] <- 0 do? How does it work?
+This command looks like it will index the data.fram where it contains missing values and replaces them with zeros. Let me check because I am not sure is.na() will work across the data.frame in this way. No I checked below and it did replace all missing with 0. 
+```{r}
+x<-matrix(letters[1:16],nrow=4)
+diag(x)<-NA
+x<-as.data.frame(x, stringsAsFactors=F)
+str(x)
+x[is.na(x)]<-0
+x
+x[x==0]<-NA
+x
+complete.cases(x)### logical for rows of data.frame
+```
+
+## Symplifying versus Preserving Subsetting.
+
+I have never understood this well and have got into trouble over it. Mostly when a one column data.frame or matrix converts to a vector.
+
+##Exercises
+1.Given a linear model, e.g., mod <- lm(mpg ~ wt, data = mtcars), extract the residual degrees of freedom. Extract the R squared from the model summary (summary(mod))
+```{r}
+mod<-lm(mpg~wt,data=mtcars)
+out<-summary(mod)
+out$r.squared
+out[[8]]
+out["r.squared"]
+str(out["r.squared"]) ### List of 1
+str(out[[8]])### number
+```
+The function "which" gives the indexes of a logical object where that logical object equals true
+```{r}
+y<-1:10<6
+y ## so y is a logical object
+which(y)
+alpha<-letters[1:10]
+alpha[which(y)] 
+### wanted to examine this
+unwhich <- function(x, n) {
+  out <- rep_len(FALSE, n)
+  out[x] <- TRUE
+  out
+}
+
+unwhich(which(y), 10) ### ok easy, create logical vector as long as n with all false
+## then use the which(x) to id the locations (indices) where the logical vector should be true.
+```
+##Exercises
+1. How would you randomly permute the columns of a data frame? (This is an important technique in random forests.) Can you simultaneously permute the rows and columns in one step?
+Answer: Knowing that there are 32 rows and 11 columns you could simultaneously permutate the rows and columns as mtcars[sample(1:32,32),sample(1:11,11)]
+
+2. How would you select a random sample of m rows from a data frame? What if the sample had to be contiguous (i.e., with an initial row, a final row, and every row in between)?
+Answer:  I think what they are asking here is how do you take a sample of a block of m rows from a data.frame. This boils down to sampling from 1 to nrow(df)-m, then using this as the starting point and taking the next m-1 records in the file
+y<-sample(1:(nrow(df)-m),1)
+myMsample<-df[y:y+(m-1),]
+
+3.How could you put the columns in a data frame in alphabetical order?
+Answer:  mtcars[,order(names(mtcars))]
+
+
